@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Clients;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ClientsController extends Controller
 {
@@ -15,6 +16,10 @@ class ClientsController extends Controller
     public function index()
     {
         //
+        
+        $datos['clients']=Clients::paginate(5);
+
+        return view('clients.index',$datos);      
     }
 
     /**
@@ -25,6 +30,7 @@ class ClientsController extends Controller
     public function create()
     {
         //
+        return view('clients.create');
     }
 
     /**
@@ -36,6 +42,20 @@ class ClientsController extends Controller
     public function store(Request $request)
     {
         //
+        
+        //$datosClient=request()->all();
+
+        $datosClient=request()->except('_token');
+
+        if($request->hasFile('Photo')) {
+
+            $datosClient['Photo']=$request->file('Photo')->store('uploads','public');
+        }
+
+        Clients::insert($datosClient);
+
+        //return response()->json($datosClient);
+        return redirect('clients')->with('Message','Client added successfully');
     }
 
     /**
@@ -55,9 +75,12 @@ class ClientsController extends Controller
      * @param  \App\Clients  $clients
      * @return \Illuminate\Http\Response
      */
-    public function edit(Clients $clients)
+    public function edit($id)
     {
         //
+        $client= Clients::findOrFail($id);
+
+        return view('clients.edit',compact('client'));
     }
 
     /**
@@ -67,9 +90,28 @@ class ClientsController extends Controller
      * @param  \App\Clients  $clients
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Clients $clients)
+    public function update(Request $request, $id)
     {
         //
+        $datosClient=request()->except(['_token','_method']);
+
+        
+        if($request->hasFile('Photo')) {
+
+            $client= Clients::findOrFail($id);
+
+            Storage::delete('public/'.$client->Photo);
+
+            $datosClient['Photo']=$request->file('Photo')->store('uploads','public');
+        }
+
+        Clients::where('id','=',$id)->update($datosClient);
+
+        //$client= Clients::findOrFail($id);
+        //return view('clients.edit',compact('client'));
+
+        return redirect('clients')->with('Message','Client successfully modified');
+
     }
 
     /**
@@ -78,8 +120,17 @@ class ClientsController extends Controller
      * @param  \App\Clients  $clients
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Clients $clients)
+    public function destroy($id)
     {
         //
+
+        $client= Clients::findOrFail($id);
+
+       if(Storage::delete('public/'.$client->Photo)) {
+        Clients::destroy($id);
+       }
+
+        return redirect('clients')->with('Message','Client removed');
+
     }
 }

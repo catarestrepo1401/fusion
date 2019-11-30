@@ -14,3 +14,11 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+//Route::get('/clients','ClientsController@index');
+
+//Route::get('/clients/create','ClientsController@create');
+
+Route::resource('clients','ClientsController');
+
+
