@@ -12,13 +12,16 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 //Route::get('/clients','ClientsController@index');
 
 //Route::get('/clients/create','ClientsController@create');
 
-Route::resource('clients','ClientsController');
+Route::resource('clients','ClientsController')->middleware('auth');
 
+//se desactiva el registro ['register'=>false]
+Auth::routes(['register'=>false]);
 
+Route::get('/home', 'HomeController@index')->name('home');
